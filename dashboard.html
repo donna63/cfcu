@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Union Bank</title>
+    <meta name="description" content="Manage your Union Bank accounts, view balances, transfer money, and access all your banking services from your secure dashboard.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="canonical" href="/dashboard.html">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: 'hsl(218, 50%, 27%)',
+                            foreground: 'hsl(0, 0%, 98%)',
+                            hover: 'hsl(218, 50%, 22%)'
+                        },
+                        secondary: {
+                            DEFAULT: 'hsl(210, 40%, 96%)',
+                            foreground: 'hsl(222.2, 84%, 4.9%)'
+                        },
+                        accent: {
+                            DEFAULT: 'hsl(43, 96%, 56%)',
+                            foreground: 'hsl(222.2, 84%, 4.9%)'
+                        },
+                        background: 'hsl(0, 0%, 100%)',
+                        foreground: 'hsl(222.2, 84%, 4.9%)',
+                        card: {
+                            DEFAULT: 'hsl(0, 0%, 100%)',
+                            foreground: 'hsl(222.2, 84%, 4.9%)'
+                        },
+                        border: 'hsl(214.3, 31.8%, 91.4%)',
+                        muted: {
+                            DEFAULT: 'hsl(210, 40%, 96%)',
+                            foreground: 'hsl(215.4, 16.3%, 46.9%)'
+                        },
+                        destructive: {
+                            DEFAULT: 'hsl(0, 84%, 60%)',
+                            foreground: 'hsl(210, 40%, 98%)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --gradient-primary: linear-gradient(135deg, hsl(218, 50%, 27%), hsl(218, 50%, 35%));
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark {
+            --background: hsl(222.2, 84%, 4.9%);
+            --foreground: hsl(210, 40%, 98%);
+            --card: hsl(222.2, 84%, 4.9%);
+            --card-foreground: hsl(210, 40%, 98%);
+            --primary: hsl(218, 50%, 35%);
+            --primary-foreground: hsl(210, 40%, 98%);
+            --secondary: hsl(217.2, 32.6%, 17.5%);
+            --secondary-foreground: hsl(210, 40%, 98%);
+            --muted: hsl(217.2, 32.6%, 17.5%);
+            --muted-foreground: hsl(215, 20.2%, 65.1%);
+            --accent: hsl(43, 96%, 56%);
+            --accent-foreground: hsl(222.2, 84%, 4.9%);
+            --border: hsl(217.2, 32.6%, 17.5%);
+        }
+
+        .hero-button {
+            background: var(--gradient-primary);
+            color: hsl(210, 40%, 98%);
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            transition: var(--transition-smooth);
+            border: none;
+            cursor: pointer;
+        }
+
+        .hero-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .banking-card {
+            background: rgba(224, 219, 219, 0.95);
+            border: 1px solid hsl(214.3, 31.8%, 91.4%);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px 5px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark .banking-card {
+            background: rgba(34, 41, 56, 0.95);
+            border: 1px solid hsl(217.2, 32.6%, 17.5%);
+        }
+
+        .bank-input {
+            border: 1px solid hsl(214.3, 31.8%, 91.4%);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            transition: var(--transition-smooth);
+        }
+
+        .bank-input:focus {
+            outline: none;
+            border-color: hsl(218, 50%, 27%);
+            box-shadow: 0 0 0 3px rgba(64, 90, 137, 0.1);
+        }
+
+        .dark .bank-input {
+            background: hsl(217.2, 32.6%, 17.5%);
+            border: 1px solid hsl(217.2, 32.6%, 17.5%);
+            color: hsl(210, 40%, 98%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-link.active {
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        /* Sidebar Animation Styles */
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 40;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 30;
+        }
+        
+        .sidebar-overlay.open {
+            display: block;
+        }
+        
+        .menu-button {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 50;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        
+        .menu-button:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+        
+
+        /* Force sidebar to be visible on desktop */
+@media (min-width: 769px) {
+    .sidebar {
+        transform: translateX(0) !important;
+        position: relative !important;
+    }
+    
+    .menu-button {
+        display: none !important;
+    }
+}
+
+/* Ensure main content has proper margin */
+main {
+    margin-left: 16rem !important; /* 256px - sidebar width */
+}
+
+/* Make sure sidebar overlay is hidden on desktop */
+.sidebar-overlay {
+    display: none !important;
+}
+        @media (max-width: 768px) {
+            .menu-button {
+                display: block;
+            }
+            
+            .sidebar {
+                width: 280px;
+            }
+            
+            main {
+                margin-left: 0 !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0);
+                position: relative;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+        
+        /* Animation for sidebar items */
+        .sidebar-item {
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Stagger animation for items */
+        .sidebar-item:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar-item:nth-child(2) { animation-delay: 0.15s; }
+        .sidebar-item:nth-child(3) { animation-delay: 0.2s; }
+        .sidebar-item:nth-child(4) { animation-delay: 0.25s; }
+        .sidebar-item:nth-child(5) { animation-delay: 0.3s; }
+        .sidebar-item:nth-child(6) { animation-delay: 0.35s; }
+        .sidebar-item:nth-child(7) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body class="bg-background text-foreground transition-colors duration-300">
+    <!-- Mobile Menu Button -->
+    <button class="menu-button" id="menuButton">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Header -->
+    <header class="bg-background border-b border-border">
+        <div class="px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center">
+                        <!-- <span class="text-white font-bold text-lg">U</span> -->
+                    </div>
+                    <img style="width: 100px;" src="50thlogo-hires.png" alt="">
+                    <!-- <span class="text-xl font-bold text-primary">Union Bank</span> -->
+                </div>
+
+              <!-- User Info & Actions -->
+<div class="flex items-center space-x-4">
+    <button id="darkModeToggle" class="p-2 rounded-md text-foreground hover:text-primary transition-colors">
+        <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+    <div class="text-sm">
+        <p class="font-medium text-foreground" id="headerUserName">Conor Steven</p>
+    </div>
+    <a href="#" id="logoutLink" class="text-sm text-primary hover:underline">Logout</a>
+</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="sidebar w-64 bg-secondary border-r border-border" id="sidebar">
+            <nav class="mt-5 px-2">
+                <div class="space-y-1">
+                    <a href="dashboard.html" class="sidebar-link active group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors sidebar-item">
+                        <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z"></path>
+                        </svg>
+                        Dashboard
+                    </a>
+
+                    <a href="acct.html" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors sidebar-item">
+                        <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Accounts
+                    </a>
+
+                    <a href="#" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors sidebar-item" onclick="openTransferModal()">
+                        <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        </svg>
+                        Transfers
+                    </a>
+
+                    <a href="transaction.html" class="sidebar-link  group flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted-foreground transition-colors sidebar-item">
+                    <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Transactions
+                </a>
+
+                    <a href="index.html" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors sidebar-item">
+                        <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto ml-0 md:ml-64 transition-all duration-300" id="mainContent">
+            <div class="py-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <!-- Welcome Header -->
+                    <div class="mb-8">
+                        <h1 class="text-3xl font-bold text-foreground">Welcome back, Conor Steven!</h1>
+                        <p class="mt-2 text-muted-foreground">Here's your account overview</p>
+                    </div>
+
+                    <!-- Account Summary Cards -->
+                    <div class="grid grid-cols-1 transition-colors gap-6 mb-8  boxShadow">
+    <div class="banking-card p-10 bg-blue-950 text-white">
+        <div class="flex items-center justify-between ">
+            <div>
+                <p class="text-sm font-medium text-muted-foreground">Account Balance</p>
+                <p class="text-3xl font-bold text-white" id="mainBalance">$1,470,354.00</p>
+                <p class="text-xs text-muted-foreground" id="mainAccountNumber">Account number: 10000013245</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599-1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+                    <!-- Quick Actions -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <button onclick="openTransferModal()" class="banking-card p-4 text-left hover:shadow-lg transition-shadow">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: var(--gradient-primary)">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">Transfer Money</p>
+                                        <p class="text-sm text-muted-foreground">Send to any account</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button class="banking-card p-4 text-left hover:shadow-lg transition-shadow">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">Pay Bills</p>
+                                        <p class="text-sm text-muted-foreground">Manage payments</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button class="banking-card p-4 text-left hover:shadow-lg transition-shadow">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">View Statements</p>
+                                        <p class="text-sm text-muted-foreground">Download PDFs</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <a href="contact.html" class="banking-card p-4 text-left hover:shadow-lg transition-shadow">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-foreground">Get Support</p>
+                                        <p class="text-sm text-muted-foreground">24/7 help center</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Recent Transactions -->
+                    <div class="banking-card">
+                        <div class="px-6 py-4 border-b border-border flex justify-between" >
+                            <h2 class="text-xl font-semibold text-foreground">Recent Transactions</h2>
+                            <a href="transaction.html"><h2 class="text-blue-500 ">view all</h2></a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-border">
+                                <thead class="bg-muted">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date & Time</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-card divide-y divide-border" id="transactionsTable">
+                                    <!-- Transactions will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="modal">
+        <div class="banking-card max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b border-border">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-foreground">Quick Transfer</h3>
+                    <button onclick="closeTransferModal()" class="text-muted-foreground hover:text-foreground">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="transferForm" class="p-6 space-y-4">
+                <!-- From Account (showing real balance) -->
+                <div>
+                    <label for="fromAccount" class="block text-sm font-medium text-card-foreground mb-2">From Account</label>
+                    <div class="bank-input w-full p-3 bg-muted/50">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">Primary Account</span>
+                            <span class="text-green-600 font-semibold" id="currentBalanceDisplay">$1,470,354.00</span>
+                        </div>
+                        <div class="text-xs text-muted-foreground mt-1" id="currentAccountNumber">Account: 10000012567</div>
+                    </div>
+                    <input type="hidden" id="fromAccount" value="primary" required>
+                </div>
+
+                <!-- Transfer Type -->
+                <div>
+                    <label class="block text-sm font-medium text-card-foreground mb-2">Transfer To</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="internalTransferBtn" class="py-2 px-3 border border-border rounded-md text-sm font-medium bg-primary text-white transition-colors">
+                            Internal Account
+                        </button>
+                        <button type="button" id="externalTransferBtn" class="py-2 px-3 border border-border rounded-md text-sm font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors">
+                            External Bank
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Internal Transfer Fields (hidden by default) -->
+                <div id="internalTransferFields" class="space-y-4">
+                    <div>
+                        <label for="toInternalAccount" class="block text-sm font-medium text-card-foreground mb-2">To Internal Account</label>
+                        <select id="toInternalAccount" class="bank-input w-full">
+                            <option value="">Select internal account</option>
+                            <option value="savings">Savings Account</option>
+                            <option value="business">Business Account</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- External Transfer Fields (hidden initially) -->
+                <div id="externalTransferFields" class="space-y-4 hidden">
+                    <div>
+                        <label for="recipientName" class="block text-sm font-medium text-card-foreground mb-2">Recipient Name</label>
+                        <input type="text" id="recipientName" class="bank-input w-full" placeholder="Enter recipient's full name">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="routingNumber" class="block text-sm font-medium text-card-foreground mb-2">Routing Number</label>
+                            <input type="text" id="routingNumber" class="bank-input w-full" placeholder="123456789" maxlength="9" pattern="[0-9]{9}">
+                        </div>
+                        <div>
+                            <label for="accountNumber" class="block text-sm font-medium text-card-foreground mb-2">Account Number</label>
+                            <input type="text" id="accountNumber" class="bank-input w-full" placeholder="Enter account number">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="bankName" class="block text-sm font-medium text-card-foreground mb-2">Bank Name</label>
+                        <input type="text" id="bankName" class="bank-input w-full" placeholder="Enter bank name">
+                    </div>
+                </div>
+
+                <!-- Amount Field -->
+                <div>
+                    <label for="amount" class="block text-sm font-medium text-card-foreground mb-2">Amount</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-3 text-muted-foreground">$</span>
+                        <input 
+                            type="number" 
+                            id="amount" 
+                            class="bank-input w-full pl-8" 
+                            placeholder="0.00"
+                            step="0.01"
+                            min="0.01"
+                            required
+                        />
+                    </div>
+                    <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                        <span>Available: <span id="availableBalance" class="font-medium">$1,470,354.00</span></span>
+                        <button type="button" onclick="setMaxAmount()" class="text-primary hover:underline">Transfer max</button>
+                    </div>
+                    <div id="amountError" class="text-sm text-destructive hidden mt-1"></div>
+                </div>
+
+                <!-- Memo/Description -->
+                <div>
+                    <label for="memo" class="block text-sm font-medium text-card-foreground mb-2">Description</label>
+                    <input 
+                        type="text" 
+                        id="memo" 
+                        class="bank-input w-full" 
+                        placeholder="Enter a note for this transfer"
+                        maxlength="100"
+                    />
+                </div>
+
+                <!-- Transfer Details Summary -->
+                <div id="transferSummary" class="bg-muted/30 p-3 rounded-md hidden">
+                    <h4 class="font-medium text-sm mb-2">Transfer Summary</h4>
+                    <div class="text-xs space-y-1">
+                        <div class="flex justify-between">
+                            <span>From:</span>
+                            <span id="summaryFrom">Primary Account</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>To:</span>
+                            <span id="summaryTo">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Amount:</span>
+                            <span id="summaryAmount">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeTransferModal()" class="px-4 py-2 border border-border text-foreground rounded-md hover:bg-muted transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="hero-button">
+                        Initiate Transfer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+// DASHBOARD AUTH CHECK
+console.log('🔐 Checking dashboard authentication...');
+
+// Check if user is logged in
+function checkAuth() {
+    const user = sessionStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
+    
+    if (!user || !token) {
+        console.log('❌ No user session found, redirecting to login');
+        window.location.href = 'login.html';
+        return null;
+    }
+    
+    return JSON.parse(user);
+}
+
+const user = checkAuth();
+
+if (!user) {
+    console.log('❌ No user, redirecting to login');
+    window.location.href = 'login.html';
+} else {
+    console.log('✅ User authenticated:', user);
+    
+    // Initialize UI components
+    initializeSidebar();
+    initializeDarkMode();
+    
+    // Load data
+    loadDashboardData();
+}
+
+// Generate realistic transaction data from last month to present
+function generateTransactionData() {
+    const transactions = [];
+    const currentBalance = 1470354.00;
+    
+    // Define transaction types and descriptions
+    const transactionTypes = [
+        { type: 'deposit', description: 'Executive Salary Deposit', amount: 125000.00 },
+        { type: 'deposit', description: 'Stock Dividend Payment', amount: 87500.00 },
+        { type: 'deposit', description: 'Business Revenue - Q4', amount: 225000.00 },
+        { type: 'deposit', description: 'Real Estate Investment Return', amount: 150000.00 },
+        { type: 'deposit', description: 'Consulting Fee Payment', amount: 75000.00 },
+        { type: 'withdrawal', description: 'Luxury Car Purchase', amount: 185000.00 },
+        { type: 'withdrawal', description: 'Investment Property Down Payment', amount: 250000.00 },
+        { type: 'withdrawal', description: 'Private Jet Charter', amount: 75000.00 },
+        { type: 'withdrawal', description: 'Yacht Maintenance', amount: 45000.00 },
+        { type: 'withdrawal', description: 'Charitable Donation', amount: 100000.00 }
+    ];
+    
+    // Generate dates from last month to present
+    const now = new Date();
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    
+    let runningBalance = currentBalance;
+    
+    // Create 10 transactions spread over the last month
+    for (let i = 0; i < 10; i++) {
+        const randomDaysAgo = Math.floor(Math.random() * 30); // Random day in last 30 days
+        const transactionDate = new Date(oneMonthAgo);
+        transactionDate.setDate(oneMonthAgo.getDate() + randomDaysAgo);
+        
+        // Random time between 9 AM and 5 PM
+        const randomHour = 9 + Math.floor(Math.random() * 8);
+        const randomMinute = Math.floor(Math.random() * 60);
+        transactionDate.setHours(randomHour, randomMinute, 0);
+        
+        const transactionType = transactionTypes[i % transactionTypes.length];
+        
+        // Calculate running balance
+        if (transactionType.type === 'deposit') {
+            runningBalance += transactionType.amount;
+        } else {
+            runningBalance -= transactionType.amount;
+        }
+        
+        transactions.push({
+            date: transactionDate,
+            description: transactionType.description,
+            amount: transactionType.amount,
+            type: transactionType.type,
+            balance: runningBalance
+        });
+    }
+    
+    // Sort transactions by date (newest first)
+    return transactions.sort((a, b) => b.date - a.date);
+}
+
+// Format date for display
+function formatTransactionDate(date) {
+    const options = { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    };
+    return date.toLocaleDateString('en-US', options);
+}
+
+// Update transactions table with generated data
+function updateTransactionsTable() {
+    const transactions = generateTransactionData();
+    const tbody = document.getElementById('transactionsTable');
+    
+    tbody.innerHTML = transactions.map(transaction => `
+        <tr class="border-b hover:bg-muted/50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">
+                ${formatTransactionDate(transaction.date)}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">
+                ${transaction.description}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                transaction.type === 'deposit' ? 'text-green-600' : 'text-red-600'
+            }">
+                ${transaction.type === 'deposit' ? '+' : '-'}$${transaction.amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">
+                $${transaction.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ✅ Dashboard Data Loading
+async function loadDashboardData() {
+    try {
+        console.log('🔄 Loading dashboard data for user:', user.id);
+        
+        // Update user info with the name "Conor Steven"
+        const headerUserName = document.getElementById('headerUserName');
+        const welcomeName = document.querySelector('h1.text-3xl');
+        if (headerUserName) headerUserName.textContent = "Conor Steven";
+        if (welcomeName) welcomeName.innerHTML = `Welcome back, <span>Conor Steven</span>!`;
+        
+        // Set account balance and number
+        const balanceElement = document.getElementById('mainBalance');
+        const accountNumberElement = document.getElementById('mainAccountNumber');
+        
+        if (balanceElement) {
+            balanceElement.textContent = '$1,470,354.00';
+        }
+        if (accountNumberElement) {
+            accountNumberElement.textContent = 'Account number: 10000012567';
+        }
+        
+        // Set transfer modal balance
+        document.getElementById('currentBalanceDisplay').textContent = '$1,470,354.00';
+        document.getElementById('currentAccountNumber').textContent = 'Account: 10000012567';
+        document.getElementById('availableBalance').textContent = '$1,470,354.00';
+        
+        // Update transactions table
+        updateTransactionsTable();
+        
+    } catch (error) {
+        console.error('❌ Error loading dashboard data:', error);
+    }
+}
+
+// Logout functionality
+function logout() {
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    window.location.href = 'login.html';
+}
+
+// ✅ Initialize Sidebar
+function initializeSidebar() {
+    const menuButton = document.getElementById('menuButton');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    // Only setup mobile functionality if elements exist
+    if (menuButton && sidebar && sidebarOverlay) {
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+        }
+
+        menuButton.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking on a link (mobile)
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 769) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 769) {
+                sidebar.classList.add('open');
+                sidebarOverlay.classList.remove('open');
+            } else {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        // Initialize sidebar state
+        if (window.innerWidth >= 769) {
+            sidebar.classList.add('open');
+        }
+    } else {
+        console.log('⚠️ Sidebar elements not found, using fallback layout');
+    }
+}
+
+// ✅ Initialize Dark Mode Toggle
+function initializeDarkMode() {
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            
+            if (document.documentElement.classList.contains('dark')) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        });
+    }
+}
+
+// ✅ Transfer Modal Functionality
+let currentBalance = 1470354.00;
+let currentAccountNumber = '10000012567';
+
+function openTransferModal() {
+    console.log('Opening transfer modal...');
+    
+    // Load current balance and account info
+    updateTransferModalBalance();
+    
+    // Show the modal
+    const modal = document.getElementById('transferModal');
+    if (modal) {
+        modal.classList.add('show');
+        modal.style.display = 'flex';
+        console.log('Modal should be visible now');
+    } else {
+        console.error('Transfer modal not found!');
+    }
+    
+    // Reset form to internal transfer
+    showInternalTransfer();
+    updateTransferSummary();
+}
+
+function closeTransferModal() {
+    console.log('Closing transfer modal...');
+    const modal = document.getElementById('transferModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+    }
+    document.getElementById('transferForm').reset();
+    document.getElementById('amountError').classList.add('hidden');
+    document.getElementById('transferSummary').classList.add('hidden');
+}
+
+function updateTransferModalBalance() {
+    document.getElementById('currentBalanceDisplay').textContent = `$${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('currentAccountNumber').textContent = `Account: ${currentAccountNumber}`;
+    document.getElementById('availableBalance').textContent = `$${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
+
+function showInternalTransfer() {
+    document.getElementById('internalTransferBtn').classList.add('bg-primary', 'text-white');
+    document.getElementById('externalTransferBtn').classList.remove('bg-primary', 'text-white');
+    document.getElementById('internalTransferBtn').classList.remove('bg-muted', 'text-foreground');
+    document.getElementById('externalTransferBtn').classList.add('bg-muted', 'text-foreground');
+    
+    document.getElementById('internalTransferFields').classList.remove('hidden');
+    document.getElementById('externalTransferFields').classList.add('hidden');
+    
+    updateTransferSummary();
+}
+
+function showExternalTransfer() {
+    document.getElementById('externalTransferBtn').classList.add('bg-primary', 'text-white');
+    document.getElementById('internalTransferBtn').classList.remove('bg-primary', 'text-white');
+    document.getElementById('externalTransferBtn').classList.remove('bg-muted', 'text-foreground');
+    document.getElementById('internalTransferBtn').classList.add('bg-muted', 'text-foreground');
+    
+    document.getElementById('externalTransferFields').classList.remove('hidden');
+    document.getElementById('internalTransferFields').classList.add('hidden');
+    
+    updateTransferSummary();
+}
+
+function setMaxAmount() {
+    const maxAmount = currentBalance - 0.01; // Leave $0.01 in account
+    document.getElementById('amount').value = maxAmount.toFixed(2);
+    updateTransferSummary();
+}
+
+function updateTransferSummary() {
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const memo = document.getElementById('memo').value;
+    
+    if (amount > 0) {
+        document.getElementById('transferSummary').classList.remove('hidden');
+        
+        // Determine transfer type and recipient
+        let recipientInfo = '';
+        if (document.getElementById('internalTransferFields').classList.contains('hidden')) {
+            // External transfer
+            const recipientName = document.getElementById('recipientName').value || 'External Account';
+            const bankName = document.getElementById('bankName').value || 'External Bank';
+            recipientInfo = `${recipientName} (${bankName})`;
+        } else {
+            // Internal transfer
+            const toAccount = document.getElementById('toInternalAccount').value;
+            recipientInfo = toAccount ? `${toAccount.charAt(0).toUpperCase() + toAccount.slice(1)} Account` : 'Select account';
+        }
+        
+        document.getElementById('summaryFrom').textContent = 'Primary Account';
+        document.getElementById('summaryTo').textContent = recipientInfo;
+        document.getElementById('summaryAmount').textContent = `$${amount.toFixed(2)}`;
+    } else {
+        document.getElementById('transferSummary').classList.add('hidden');
+    }
+}
+
+// Initialize transfer functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing transfer modal...');
+    
+    // Add event listeners for transfer type buttons
+    const internalBtn = document.getElementById('internalTransferBtn');
+    const externalBtn = document.getElementById('externalTransferBtn');
+    
+    if (internalBtn) {
+        internalBtn.addEventListener('click', showInternalTransfer);
+    }
+    if (externalBtn) {
+        externalBtn.addEventListener('click', showExternalTransfer);
+    }
+
+    // Transfer form validation and submission
+    const transferForm = document.getElementById('transferForm');
+    if (transferForm) {
+        transferForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('amount').value);
+            const memo = document.getElementById('memo').value;
+            const amountError = document.getElementById('amountError');
+            const isExternalTransfer = document.getElementById('externalTransferFields').classList.contains('hidden') === false;
+            
+            // Reset errors
+            amountError.classList.add('hidden');
+            
+            let isValid = true;
+
+            // Basic validation
+            if (!amount || amount <= 0) {
+                amountError.textContent = 'Please enter a valid amount greater than 0';
+                amountError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (amount > currentBalance) {
+                amountError.textContent = 'Insufficient funds in your account';
+                amountError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            if (amount < 1.00) {
+                amountError.textContent = 'Minimum transfer amount is $1.00';
+                amountError.classList.remove('hidden');
+                isValid = false;
+            }
+
+            // External transfer validation
+            if (isExternalTransfer) {
+                const recipientName = document.getElementById('recipientName').value;
+                const routingNumber = document.getElementById('routingNumber').value;
+                const accountNumber = document.getElementById('accountNumber').value;
+                const bankName = document.getElementById('bankName').value;
+                
+                if (!recipientName) {
+                    alert('Please enter recipient name');
+                    isValid = false;
+                }
+                
+                if (!routingNumber || !/^\d{9}$/.test(routingNumber)) {
+                    alert('Please enter a valid 9-digit routing number');
+                    isValid = false;
+                }
+                
+                if (!accountNumber) {
+                    alert('Please enter recipient account number');
+                    isValid = false;
+                }
+                
+                if (!bankName) {
+                    alert('Please enter bank name');
+                    isValid = false;
+                }
+            } else {
+                // Internal transfer validation
+                const toAccount = document.getElementById('toInternalAccount').value;
+                if (!toAccount) {
+                    alert('Please select an internal account to transfer to');
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                // Prepare transfer details
+                const transferDetails = {
+                    amount: amount,
+                    memo: memo,
+                    type: isExternalTransfer ? 'external' : 'internal',
+                    timestamp: new Date().toISOString()
+                };
+
+                if (isExternalTransfer) {
+                    transferDetails.recipient = {
+                        name: document.getElementById('recipientName').value,
+                        routingNumber: document.getElementById('routingNumber').value,
+                        accountNumber: document.getElementById('accountNumber').value,
+                        bankName: document.getElementById('bankName').value
+                    };
+                } else {
+                    transferDetails.toAccount = document.getElementById('toInternalAccount').value;
+                }
+
+                // Simulate transfer processing
+                const transferMessage = isExternalTransfer ? 
+                    `External transfer initiated!\n\nAmount: $${amount.toFixed(2)}\nTo: ${transferDetails.recipient.name}\nBank: ${transferDetails.recipient.bankName}\nRouting: ${transferDetails.recipient.routingNumber}\nAccount: ${transferDetails.recipient.accountNumber}\n${memo ? 'Memo: ' + memo : ''}` :
+                    `Internal transfer initiated!\n\nAmount: $${amount.toFixed(2)}\nFrom: Primary Account\nTo: ${transferDetails.toAccount} Account\n${memo ? 'Memo: ' + memo : ''}`;
+
+                alert(transferMessage + '\n\nYou need a debit card to transfer!');
+                closeTransferModal();
+            }
+        });
+    }
+
+    // Add real-time validation and summary updates
+    const amountInput = document.getElementById('amount');
+    const memoInput = document.getElementById('memo');
+    const toInternalAccount = document.getElementById('toInternalAccount');
+    const recipientName = document.getElementById('recipientName');
+    const routingNumber = document.getElementById('routingNumber');
+    const accountNumber = document.getElementById('accountNumber');
+    const bankName = document.getElementById('bankName');
+    
+    if (amountInput) amountInput.addEventListener('input', updateTransferSummary);
+    if (memoInput) memoInput.addEventListener('input', updateTransferSummary);
+    if (toInternalAccount) toInternalAccount.addEventListener('change', updateTransferSummary);
+    if (recipientName) recipientName.addEventListener('input', updateTransferSummary);
+    if (routingNumber) routingNumber.addEventListener('input', updateTransferSummary);
+    if (accountNumber) accountNumber.addEventListener('input', updateTransferSummary);
+    if (bankName) bankName.addEventListener('input', updateTransferSummary);
+
+    // Close modal when clicking outside
+    const modal = document.getElementById('transferModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTransferModal();
+            }
+        });
+    }
+    
+    // Add logout functionality
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
+    
+    console.log('Transfer modal initialized successfully');
+});
+</script>
+
+</body>
+</html>
