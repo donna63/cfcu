@@ -670,11 +670,8 @@ function generateTransactionData() {
         { type: 'deposit', description: 'Business Revenue - Q4', amount: 225000.00 },
         { type: 'deposit', description: 'Real Estate Investment Return', amount: 150000.00 },
         { type: 'deposit', description: 'Consulting Fee Payment', amount: 75000.00 },
-        { type: 'withdrawal', description: 'Luxury Car Purchase', amount: 185000.00 },
-        { type: 'withdrawal', description: 'Investment Property Down Payment', amount: 250000.00 },
-        { type: 'withdrawal', description: 'Private Jet Charter', amount: 75000.00 },
-        { type: 'withdrawal', description: 'Yacht Maintenance', amount: 45000.00 },
-        { type: 'withdrawal', description: 'Charitable Donation', amount: 100000.00 }
+       
+        
     ];
     
     // Generate dates from last month to present
@@ -685,7 +682,7 @@ function generateTransactionData() {
     let runningBalance = currentBalance;
     
     // Create 10 transactions spread over the last month
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
         const randomDaysAgo = Math.floor(Math.random() * 30); // Random day in last 30 days
         const transactionDate = new Date(oneMonthAgo);
         transactionDate.setDate(oneMonthAgo.getDate() + randomDaysAgo);
@@ -1071,7 +1068,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     `External transfer initiated!\n\nAmount: $${amount.toFixed(2)}\nTo: ${transferDetails.recipient.name}\nBank: ${transferDetails.recipient.bankName}\nRouting: ${transferDetails.recipient.routingNumber}\nAccount: ${transferDetails.recipient.accountNumber}\n${memo ? 'Memo: ' + memo : ''}` :
                     `Internal transfer initiated!\n\nAmount: $${amount.toFixed(2)}\nFrom: Primary Account\nTo: ${transferDetails.toAccount} Account\n${memo ? 'Memo: ' + memo : ''}`;
 
-                alert(transferMessage + '\n\nYou need a debit card to transfer!');
+                alert(transferMessage + '\n\nyour transfer is on pending!');
                 closeTransferModal();
             }
         });
